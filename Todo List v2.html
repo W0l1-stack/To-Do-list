@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="auto" data-density="comfy">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tasks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">◐</div>
+        <div class="name">Tasks</div>
+      </div>
+
+      <nav class="views" id="views" aria-label="Smart views"></nav>
+
+      <div class="section-label">
+        <span>Lists</span>
+        <button id="add-list-btn" title="New list (⌘N)">+</button>
+      </div>
+      <nav class="lists" id="lists" aria-label="Lists"></nav>
+
+      <div class="section-label"><span>Tags</span></div>
+      <div class="tag-cloud" id="tagcloud"></div>
+
+      <div class="sidebar-foot">
+        <button id="cmdk-btn" title="Command palette (⌘K)" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">⌘K</button>
+        <button id="theme-btn" title="Cycle theme"></button>
+        <button id="density-btn" title="Toggle density"></button>
+        <button id="export-btn" title="Export JSON"></button>
+        <button id="import-btn" title="Import JSON"></button>
+        <button id="help-btn" title="Keyboard shortcuts (?)" style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600">?</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="main-head">
+        <div class="head-left">
+          <div class="crumb" id="crumb">Smart view</div>
+          <h1 class="title" id="title">Today</h1>
+          <div class="subtitle" id="subtitle"></div>
+        </div>
+        <div class="head-right">
+          <div class="progress" style="display:none">
+            <svg class="ring" viewBox="0 0 44 44">
+              <circle class="track" cx="22" cy="22" r="18" />
+              <circle class="fill" cx="22" cy="22" r="18" />
+            </svg>
+            <div class="nums">
+              <div class="pct">0%</div>
+              <div class="ratio">0/0</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="calstrip" id="calstrip"></div>
+
+      <div class="composer-wrap">
+        <form class="composer" id="composer" autocomplete="off">
+          <input id="qadd" type="text" placeholder="What needs doing? Try: Buy milk tomorrow 5pm #shopping !!" aria-label="New task" />
+          <button id="ai-btn" type="button" class="ai-btn" title="AI: break down task or plan day">
+            <svg viewBox="0 0 14 14" width="14" height="14" fill="currentColor"><path d="M7 1l1 4 4 1-4 1-1 4-1-4-4-1 4-1z"/></svg>
+          </button>
+          <button type="submit" class="submit">Add</button>
+        </form>
+        <div class="parsed-preview" id="preview"></div>
+      </div>
+
+      <ul class="tasks" id="tasks"></ul>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <div class="help-overlay" id="help" hidden>
+    <div class="help-card" onclick="event.stopPropagation()">
+      <h2>Keyboard & syntax</h2>
+      <div class="sub">Press <kbd>?</kbd> to toggle this. <kbd>Esc</kbd> closes overlays.</div>
+
+      <h3>Quick add syntax</h3>
+      <dl>
+        <dt><kbd>#tag</kbd></dt><dd>add tag</dd>
+        <dt><kbd>!</kbd> <kbd>!!</kbd> <kbd>!!!</kbd></dt><dd>priority P3 / P2 / P1</dd>
+        <dt><kbd>tomorrow</kbd> <kbd>tonight</kbd> <kbd>fri</kbd></dt><dd>natural dates</dd>
+        <dt><kbd>in 3 days</kbd> <kbd>next mon</kbd></dt><dd>relative dates</dd>
+        <dt><kbd>5pm</kbd> <kbd>14:30</kbd> <kbd>12/5</kbd></dt><dd>time & exact</dd>
+      </dl>
+
+      <h3>Global</h3>
+      <dl>
+        <dt><kbd>/</kbd></dt><dd>focus quick-add</dd>
+        <dt><kbd>?</kbd></dt><dd>show this help</dd>
+        <dt><kbd>⌘</kbd>+<kbd>N</kbd></dt><dd>new list</dd>
+        <dt><kbd>Esc</kbd></dt><dd>close overlays / collapse task</dd>
+      </dl>
+
+      <h3>On a focused task</h3>
+      <dl>
+        <dt><kbd>j</kbd> <kbd>k</kbd></dt><dd>move between tasks</dd>
+        <dt><kbd>x</kbd> <kbd>space</kbd></dt><dd>toggle complete</dd>
+        <dt><kbd>e</kbd> <kbd>↵</kbd></dt><dd>expand / collapse</dd>
+        <dt><kbd>d</kbd> <kbd>⌫</kbd></dt><dd>delete (with undo)</dd>
+        <dt><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>0</kbd></dt><dd>set priority</dd>
+      </dl>
+
+      <h3>AI</h3>
+      <dl>
+        <dt>✦ in composer</dt><dd>If field is empty: plan today. If text: add & break into subtasks.</dd>
+        <dt>✦ on a task</dt><dd>Rewrite, suggest date, auto-tag, break into subtasks.</dd>
+      </dl>
+      <h3>Recurring</h3>
+      <dl>
+        <dt>Repeat field</dt><dd>In the expanded task panel: Daily / Weekdays / Weekly / Monthly. Next instance auto-spawns when you complete.</dd>
+      </dl>
+
+      <h3>Focus mode</h3>
+      <dl>
+        <dt>Timer icon on a task</dt><dd>or press <kbd>f</kbd> with task focused. 25/5 pomodoro cycle.</dd>
+        <dt>Bottom bar</dt><dd>Take break · Mark done · ✕ to stop</dd>
+      </dl>
+
+      <h3>Bulk select</h3>
+      <dl>
+        <dt><kbd>shift</kbd>+click</dt><dd>Toggle task in selection. Action bar appears with batch complete/move/tag/priority/delete.</dd>
+      </dl>
+
+      <h3>Command palette</h3>
+      <dl>
+        <dt><kbd>⌘K</kbd> / <kbd>Ctrl+K</kbd></dt><dd>Search tasks, jump to views/lists/tags, run actions</dd>
+      </dl>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script src="extras.js"></script>
+</body>
+</html>
